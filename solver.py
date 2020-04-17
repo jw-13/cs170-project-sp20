@@ -16,20 +16,18 @@ def solve(G):
 
     # TODO: your code here!
 
+    #random graph:
     #G = nx.connected_watts_strogatz_graph(n=25, k=4, p=0.6)
 
-    plt.figure(figsize = (12, 12))
-
+    # drawing the graph with weights:
     pos=nx.planar_layout(G)
-    nx.draw_networkx(G,pos)
+    nx.draw_networkx(G, pos)
     labels = nx.get_edge_attributes(G,'weight')
     nx.draw_networkx_edge_labels(G,pos,edge_labels=labels)
     plt.show()
 
     print([e for e in G.edges])
-
     mst = nx.minimum_spanning_tree(G)
-    #print(sorted(mst.edges(data=True)))
     return mst
 
     # pass
