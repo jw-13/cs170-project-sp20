@@ -20,21 +20,21 @@ def solve(G):
     #G = nx.connected_watts_strogatz_graph(n=25, k=4, p=0.8)
 
     # drawing the graph with weights: spring_layout same length edges / circular_layout easier to see degrees
-    pos=nx.circular_layout(G)
-    nx.draw_networkx(G, pos)
-    labels = nx.get_edge_attributes(G,"weight")
-    nx.draw_networkx_edge_labels(G,pos,edge_labels=labels)
-    plt.show()
+    #pos=nx.spring_layout(G)
+    #nx.draw_networkx(G, pos)
+    #labels = nx.get_edge_attributes(G,"weight")
+    #nx.draw_networkx_edge_labels(G,pos,edge_labels=labels)
+    #plt.show()
 
-    print([e for e in G.edges])
+    #print([e for e in G.edges])
 
     mst = nx.minimum_spanning_tree(G)
     #print([i for i in mst.edges])
 
     # drawing tree:
-    #tree_pos = nx.spring_layout(mst)
-    #nx.draw_networkx(mst, tree_pos)
-    #plt.show()
+    tree_pos = nx.spring_layout(mst)
+    nx.draw_networkx(mst, tree_pos)
+    plt.show()
     return mst
 
     # pass
