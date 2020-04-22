@@ -6,7 +6,6 @@ import networkx as nx
 import utils
 
 
-
 def validate_file(path):
     """File must not exceed 100KB and must contain only numbers and spaces"""
     if os.path.getsize(path) > 100000:
@@ -22,7 +21,6 @@ def validate_file(path):
 def read_input_file(path, max_size=None):
     """
     Parses and validates an input file
-
     :param path: str, a path
     :return: networkx Graph is the input is well formed, AssertionError thrown otherwise
     """
@@ -67,7 +65,6 @@ def write_input_file(G, path):
 def read_output_file(path, G):
     """
     Parses and validates an input file
-
     :param path: str, a path
     :param G: the input graph corresponding to this output
     :return: networkx Graph is the output is well formed, AssertionError thrown otherwise
