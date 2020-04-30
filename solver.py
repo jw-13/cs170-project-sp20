@@ -34,11 +34,12 @@ def solve(G):
     for v in v_deg_1:
         copy_result = result.copy()
         copy_result.remove_node(v)
-        if average_pairwise_distance(copy_result) <= average_pairwise_distance(result):
-            result = copy_result
+        if (copy_result.size() > 0) and nx.is_connected(copy_result):
+            if average_pairwise_distance(copy_result) <= average_pairwise_distance(result):
+                result = copy_result
 
     covered_set = {}
-    print("covered" , covered_set)
+    #print("covered" , covered_set)
 
     #print(len(G.__getitem__(0))) #number of neighbors in G
     #len(G.__getitem__(0)) - len(T.__getitem__(0))
@@ -58,19 +59,45 @@ def solve(G):
 # Usage: python3 solver.py inputs/small-302.in
 
 if __name__ == '__main__':
+
     assert len(sys.argv) == 2
-    path = sys.argv[1]
 
-    G = read_input_file(path)
+    #for running on all inputs
+    if sys.argv[1] == "all_inputs":
+        """
+        for i in range(1,304):
+            path = 'inputs/small-'+str(i)+'.in'
+            G = read_input_file(path)
+            T = solve(G)
+            assert is_valid_network(G, T)
+            print(path + "Average  pairwise distance: {}".format(average_pairwise_distance(T)))
+            path_string = re.split('[/.]', path)
+            write_output_file(T, 'outputs/'+path_string[1]+'.out')
+        for i in range(1,304):
+            path = 'inputs/medium-'+str(i)+'.in'
+            G = read_input_file(path)
+            T = solve(G)
+            assert is_valid_network(G, T)
+            print(path + "Average  pairwise distance: {}".format(average_pairwise_distance(T)))
+            path_string = re.split('[/.]', path)
+            write_output_file(T, 'outputs/'+path_string[1]+'.out')
+        for i in range(1,401):
+            path = 'inputs/large-'+str(i)+'.in'
+            G = read_input_file(path)
+            T = solve(G)
+            assert is_valid_network(G, T)
+            print(path + "Average  pairwise distance: {}".format(average_pairwise_distance(T)))
+            path_string = re.split('[/.]', path)
+            write_output_file(T, 'outputs/'+path_string[1]+'.out')
+        """
+    else:
+        path = sys.argv[1]
+        G = read_input_file(path)
+        T = solve(G)
+        assert is_valid_network(G, T)
+        print(path + "Average  pairwise distance: {}".format(average_pairwise_distance(T)))
+        path_string = re.split('[/.]', path)
+        write_output_file(T, 'outputs/'+path_string[1]+'.out')
 
-    """
-    if you want to plot the graph
-    nx.draw(G, with_labels=True, font_weight='bold')
-    plt.show()
-    """
 
-    T = solve(G)
-    assert is_valid_network(G, T)
-    print("Average  pairwise distance: {}".format(average_pairwise_distance(T)))
-    path_string = re.split('[/.]', path)
-    write_output_file(T, 'output/'+path_string[1]+'.out')
+
