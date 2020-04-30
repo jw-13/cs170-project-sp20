@@ -16,11 +16,13 @@ def solve(G):
     # TODO: your code here!
 
     #to draw graph
+    """
     plt.figure(figsize=(8,8))
     pos=nx.spring_layout(G)
     nx.draw_networkx(G, pos)
     labels = nx.get_edge_attributes(G,"weight")
     nx.draw_networkx_edge_labels(G,pos,edge_labels=labels)
+    """
 
     v_descending_degree = sorted([n for n, d in G.degree()], reverse=True, key=G.degree()) #vertices sorted by degree
     v_ascending_degree = sorted([n for n, d in G.degree()], reverse=False, key=G.degree())
@@ -31,6 +33,7 @@ def solve(G):
     T = nx.minimum_spanning_tree(G)
     result = T
 
+    #looking at only degree 1 vertices
     for v in v_deg_1:
         copy_result = result.copy()
         copy_result.remove_node(v)
@@ -45,11 +48,13 @@ def solve(G):
     #len(G.__getitem__(0)) - len(T.__getitem__(0))
     #print(G.__getitem__(1)) #get list of neighbors
 
-    #to draw tree in the same plot as G, uncomment plt.show()
+    #to draw tree in the same plot as G
+    """
     nx.draw_networkx_edges(G,pos,
         edgelist=[e for e in T.edges()],
         width=5,alpha=0.5,edge_color='r')
-    #plt.show()
+    plt.show()
+    """
 
     #is_valid_network(T) to check if it works
     #total_pairwise_distance = average_pairwise_distance(T) * (len(T) * (len(T) - 1))
@@ -59,10 +64,9 @@ def solve(G):
 # Usage: python3 solver.py inputs/small-302.in
 
 if __name__ == '__main__':
-
     assert len(sys.argv) == 2
 
-    #for running on all inputs
+    #to run on all inputs: python3 solver.py all_inputs
     if sys.argv[1] == "all_inputs":
         """
         for i in range(1,304):
@@ -98,6 +102,3 @@ if __name__ == '__main__':
         print(path + "Average  pairwise distance: {}".format(average_pairwise_distance(T)))
         path_string = re.split('[/.]', path)
         write_output_file(T, 'outputs/'+path_string[1]+'.out')
-
-
-
