@@ -26,9 +26,13 @@ def solve(G):
 
     v_descending_degree = sorted([n for n, d in G.degree()], reverse=True, key=G.degree()) #vertices sorted by degree
     v_ascending_degree = sorted([n for n, d in G.degree()], reverse=False, key=G.degree())
+    v_deg_1 = [v for v in v_ascending_degree if G.degree[v]==1] #all leaves
+    max_v = v_descending_degree[0] #vertex with max degree
 
-    v_deg_1 = [v for v in v_ascending_degree if G.degree[v]==1] #leaves
-    max_v = max(v_descending_degree) #vertex with max degree
+    if len(G.__getitem__(max_v)) == G.number_of_nodes()-1:
+        T = nx.Graph()
+        T.add_node(max_v)
+        return T
 
     T = nx.minimum_spanning_tree(G)
     result = T
@@ -41,7 +45,6 @@ def solve(G):
             if average_pairwise_distance(copy_result) <= average_pairwise_distance(result):
                 result = copy_result
 
-    covered_set = {}
     #print("covered" , covered_set)
 
     #print(len(G.__getitem__(0))) #number of neighbors in G
@@ -99,6 +102,6 @@ if __name__ == '__main__':
         G = read_input_file(path)
         T = solve(G)
         assert is_valid_network(G, T)
-        print(path + "Average  pairwise distance: {}".format(average_pairwise_distance(T)))
+        print(path + " Average pairwise distance: {}".format(average_pairwise_distance(T)))
         path_string = re.split('[/.]', path)
         write_output_file(T, 'outputs/'+path_string[1]+'.out')
