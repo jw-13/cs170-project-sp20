@@ -53,8 +53,6 @@ def solve(G):
     return T
 
 
-# prim's algo from networkx
-# returns iterator over edges of mst
 def prim_mst_edges(G, start):
     """Iterate over edges of Prim's algorithm min/max spanning tree.
     Parameters
@@ -121,7 +119,7 @@ if __name__ == '__main__':
 
     #to run on all inputs: python3 solver.py all_inputs
     if sys.argv[1] == "all_inputs":
-        """
+
         for i in range(1,304):
             path = 'inputs/small-'+str(i)+'.in'
             G = read_input_file(path)
@@ -130,7 +128,7 @@ if __name__ == '__main__':
             print(path + " Average pairwise distance: {}".format(average_pairwise_distance(T)))
             path_string = re.split('[/.]', path)
             write_output_file(T, 'outputs/'+path_string[1]+'.out')
-
+        """
         for i in range(1,304):
             path = 'inputs/medium-'+str(i)+'.in'
             G = read_input_file(path)
@@ -139,7 +137,7 @@ if __name__ == '__main__':
             print(path + " Average pairwise distance: {}".format(average_pairwise_distance(T)))
             path_string = re.split('[/.]', path)
             write_output_file(T, 'outputs/'+path_string[1]+'.out')
-        """
+
         for i in range(1,401):
             path = 'inputs/large-'+str(i)+'.in'
             G = read_input_file(path)
@@ -148,7 +146,7 @@ if __name__ == '__main__':
             print(path + " Average pairwise distance: {}".format(average_pairwise_distance(T)))
             path_string = re.split('[/.]', path)
             write_output_file(T, 'outputs/'+path_string[1]+'.out')
-
+        """
     else:
         path = sys.argv[1]
         G = read_input_file(path)
