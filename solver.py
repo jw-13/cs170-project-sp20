@@ -4,7 +4,7 @@ from utils import is_valid_network, average_pairwise_distance
 import sys
 
 import matplotlib.pyplot as plt
-import re #regex
+import re
 
 def solve(G):
     """
