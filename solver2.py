@@ -17,31 +17,32 @@ def solve(G):
     Returns:
         T: networkx.Graph
     """
+    v_descending_degree = sorted([n for n, d in G.degree()], reverse=True, key=G.degree()) #vertices sorted by degree
+    max_v = v_descending_degree[0] #vertex with max degree
 
-    result_edges = tree.mst.prim_mst_edges(G, True)
-    edgelist = list(result_edges)
+    if len(G.__getitem__(max_v)) == G.number_of_nodes()-1:
+        T = nx.Graph()
+        T.add_node(max_v)
+        return T
+
+    mst_edges = prim_mst_edges(G, max_v)
+    edgelist = list(mst_edges)
 
     str_edgelist = []
     for edge in edgelist:
         str_edgelist.append(str(str(edge[0])+" "+str(edge[1])+" "+str(edge[2]["weight"])))
     T = nx.parse_edgelist(str_edgelist, nodetype=int, data=(('weight',float),))
 
-    result_tree = T
+    v_ascending_degree = sorted([n for n, d in T.degree()], reverse=False, key=T.degree())
+    v_deg_1 = [v for v in v_ascending_degree if T.degree[v]==1] #all leaves of tree
 
-    v_descending_degree = sorted([n for n, d in G.degree()], reverse=True, key=G.degree()) #vertices sorted by degree
-    max_v = max(v_descending_degree) #vertex with max degree
-
-    curr_set = {max_v}
-    N = len(v_descending_degree)
-    i = 0
-    while (i < N):
-        new_set = curr_set
-        new_set.update(G.__getitem__(i))
-        if (len(new_set) < N):
-            if (not set(G.__getitem__(i)).issubset(curr_set)):
-                curr_set = curr_set.add(i)
-        i += 1
-
+    #looking at all leaves
+    for v in v_deg_1:
+        copy_result = T.copy()
+        copy_result.remove_node(v)
+        if (copy_result.size() > 0) and nx.is_connected(copy_result):
+            if average_pairwise_distance(copy_result) <= average_pairwise_distance(T):
+                T = copy_result
 
     #print(len(G.__getitem__(0))) #number of neighbors in G
     #len(G.__getitem__(0)) - len(T.__getitem__(0))
@@ -49,68 +50,70 @@ def solve(G):
 
     #is_valid_network(T) to check if it works
     #total_pairwise_distance = average_pairwise_distance(T) * (len(T) * (len(T) - 1))
-    return result_tree
+    return T
 
 
 # prim's algo from networkx
-#returns iterator over edges of mst
-def prim_mst_edges(G, minimum, weight='weight',
-                   keys=True, data=True, ignore_nan=False):
+# returns iterator over edges of mst
+def prim_mst_edges(G, start):
     """Iterate over edges of Prim's algorithm min/max spanning tree.
-
     Parameters
     ----------
     G : NetworkX Graph
         The graph holding the tree of interest.
-
-    minimum : bool (default: True)
-        Find the minimum (True) or maximum (False) spanning tree.
-
-    weight : string (default: 'weight')
-        The name of the edge attribute holding the edge weights.
-
-    keys : bool (default: True)
-        If `G` is a multigraph, `keys` controls whether edge keys ar yielded.
-        Otherwise `keys` is ignored.
-
-    data : bool (default: True)
-        Flag for whether to yield edge attribute dicts.
-        If True, yield edges `(u, v, d)`, where `d` is the attribute dict.
-        If False, yield edges `(u, v)`.
-
-    ignore_nan : bool (default: False)
-        If a NaN is found as an edge weight normally an exception is raised.
-        If `ignore_nan is True` then that edge is ignored instead.
-
+    start : int
+        The starting vertex to run Prim's on.
     """
     push = heappush
     pop = heappop
-
     nodes = set(G)
     c = count()
 
     while nodes:
-        u = nodes.pop()
+        if (len(nodes) == G.number_of_nodes()): #let starting vertex be max_v
+            u = start
+            nodes.discard(u)
+        else:
+            u = nodes.pop()
         frontier = []
         visited = {u}
-        for v, d in G.adj[u].items():
-            wt = d.get(weight, 1)
+
+        for v, d in G.adj[u].items(): #all neighbor vertices v, d is weight of (u,v)
+            """#heuristic stuff
+            #sum of v's incident edges (v, w):
+            sum_incident_edges = sum([d2.get("weight") for w, d2 in G.adj[v].items()])
+            deg_v = len(G.__getitem__(v))
+            score = 1
+            print("score of vertex", v, score)
+            """
+            wt = d.get("weight") #edge weight
             push(frontier, (wt, next(c), u, v, d))
+
         while frontier:
+            """ #heuristic stuff
+            vertex_v = [v for w, _, u, v, d in frontier]
+
+            #neighborhood of v:
+            neighborhood_v = [set(G.__getitem__(v)) for w, _, u, v, d in frontier]
+            dictionary = dict(zip(vertex_v, neighborhood_v))
+            print(dictionary)
+
+            #non-visited neighbors of v:
+            print(visited.intersection(set(G.__getitem__(v))))
+            #len(G.__getitem__(v)) - len(visited.intersection(set(G.__getitem__(v))))
+            """
+
             W, _, u, v, d = pop(frontier)
             if v in visited or v not in nodes:
                 continue
-            if data:
-                yield u, v, d
-            else:
-                yield u, v
+            yield u, v, d
             # update frontier
             visited.add(v)
             nodes.discard(v)
             for w, d2 in G.adj[v].items():
                 if w in visited:
                     continue
-                new_weight = d2.get(weight, 1)
+                new_weight = d2.get("weight")
                 push(frontier, (new_weight, next(c), v, w, d2))
 
 if __name__ == '__main__':
@@ -124,31 +127,33 @@ if __name__ == '__main__':
             G = read_input_file(path)
             T = solve(G)
             assert is_valid_network(G, T)
-            print(path + "Average  pairwise distance: {}".format(average_pairwise_distance(T)))
+            print(path + " Average pairwise distance: {}".format(average_pairwise_distance(T)))
             path_string = re.split('[/.]', path)
             write_output_file(T, 'outputs/'+path_string[1]+'.out')
+
         for i in range(1,304):
             path = 'inputs/medium-'+str(i)+'.in'
             G = read_input_file(path)
             T = solve(G)
             assert is_valid_network(G, T)
-            print(path + "Average  pairwise distance: {}".format(average_pairwise_distance(T)))
+            print(path + " Average pairwise distance: {}".format(average_pairwise_distance(T)))
             path_string = re.split('[/.]', path)
             write_output_file(T, 'outputs/'+path_string[1]+'.out')
+        """
         for i in range(1,401):
             path = 'inputs/large-'+str(i)+'.in'
             G = read_input_file(path)
             T = solve(G)
             assert is_valid_network(G, T)
-            print(path + "Average  pairwise distance: {}".format(average_pairwise_distance(T)))
+            print(path + " Average pairwise distance: {}".format(average_pairwise_distance(T)))
             path_string = re.split('[/.]', path)
             write_output_file(T, 'outputs/'+path_string[1]+'.out')
-        """
+
     else:
         path = sys.argv[1]
         G = read_input_file(path)
         T = solve(G)
         assert is_valid_network(G, T)
-        print(path + "Average  pairwise distance: {}".format(average_pairwise_distance(T)))
+        print(path + " Average pairwise distance: {}".format(average_pairwise_distance(T)))
         path_string = re.split('[/.]', path)
         write_output_file(T, 'outputs/'+path_string[1]+'.out')
