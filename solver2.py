@@ -46,6 +46,7 @@ def solve(G):
     v_deg_1 = [v for v in v_ascending_degree if T.degree[v]==1] #all leaves of tree
 
     #looking at all leaves
+
     for v in v_deg_1:
         copy_result = T.copy()
         copy_result.remove_node(v)
@@ -112,6 +113,7 @@ def kruskal_mst_edges(G, weight='weight', data=True):
 
 
     subtrees = UnionFind()
+    track_sum = {}
     for edge in G.edges(data=True):
         edge = list(edge)
         incident_degree = G.degree(edge[0]) + G.degree(edge[1]) - 2
@@ -119,6 +121,9 @@ def kruskal_mst_edges(G, weight='weight', data=True):
         sum_of_incident += sum([v3['weight'] for v1,v2,v3 in G.edges.data() if v1==edge[1] or v2==edge[1]])
         average_sum_of_incident = sum_of_incident / incident_degree
         edge[2]['weight'] += average_sum_of_incident
+        track_sum[str(edge[0]) + str(edge[1]) + str(edge[2]['weight'])] = average_sum_of_incident
+        
+
 
 
 
@@ -126,6 +131,9 @@ def kruskal_mst_edges(G, weight='weight', data=True):
     for u, v, d in edges:
         if subtrees[u] != subtrees[v]:
             if data:
+                remove = track_sum.get(str(u) + str(v) + str(d['weight']))
+                d['weight'] -= remove
+                
                 yield (u, v, d)
             else:
                 yield (u, v)
