@@ -2,17 +2,17 @@
 
 Take a look at the project spec before you get started!
 
-Requirements:
+### Requirements:
+You'll need to install networkx. For installation instructions, follow: https://networkx.github.io/documentation/stable/install.html
 
-You'll only need to install networkx to work with the starter code. For installation instructions, follow: https://networkx.github.io/documentation/stable/install.html
-
-Files:
-
+### Files:
 parse.py: functions to read/write inputs and outputs
-solver.py: where you should be writing your code to solve inputs
-utils.py: contains functions to compute cost and validate NetworkX graphs
-When writing inputs/outputs:
+solver.py: code to solve inputs
+utils.py: functions to compute cost and validate NetworkX graphs
 
-Make sure you use the functions write_input_file and write_output_file provided
-Run the functions read_input_file and read_output_file to validate your files before submitting!
-These are the functions run by the autograder to validate submissions
+### Usage:
+To run on a specific input graph, for example small-100.in
+```python3 solver.py inputs/small-100.in```
+
+To run on all input graphs
+```python3 solver.py all_inputs```

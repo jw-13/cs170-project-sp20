@@ -162,9 +162,8 @@ def prim_mst_edges(G, start):
 if __name__ == '__main__':
     assert len(sys.argv) == 2
 
-    #to run on all inputs: python3 solver.py all_inputs
     if sys.argv[1] == "all_inputs":
-
+        """
         for i in range(1,304):
             path = 'inputs/small-'+str(i)+'.in'
             G = read_input_file(path)
@@ -191,7 +190,7 @@ if __name__ == '__main__':
             print(path + " Average pairwise distance: {}".format(average_pairwise_distance(T)))
             path_string = re.split('[/.]', path)
             write_output_file(T, 'outputs/'+path_string[1]+'.out')
-        """
+
     else:
         path = sys.argv[1]
         G = read_input_file(path)
