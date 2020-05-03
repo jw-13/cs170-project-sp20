@@ -3,7 +3,6 @@ from parse import read_input_file, write_output_file
 from utils import is_valid_network, average_pairwise_distance
 import sys
 
-import matplotlib.pyplot as plt
 import re
 from networkx.algorithms import tree
 
@@ -24,14 +23,11 @@ def solve(G):
     curr_min_sum = sum([v3['weight'] for v1,v2,v3 in G.edges.data() if v1==curr_max_deg_v or v2==curr_max_deg_v])
     for v in all_max_deg_vs:
         sum_incident_edges = sum([v3['weight'] for v1,v2,v3 in G.edges.data() if v1==v or v2==v])
-        print(sum_incident_edges)
-        print(curr_min_sum)
         if (sum_incident_edges <= curr_min_sum):
             curr_max_deg_v = v
             curr_min_sum = sum_incident_edges
 
     max_v = curr_max_deg_v
-    #max_v = v_descending_degree[0] #vertex with max degree
 
     if len(G.__getitem__(max_v)) == G.number_of_nodes()-1:
         T = nx.Graph()
@@ -57,9 +53,6 @@ def solve(G):
             if average_pairwise_distance(copy_result) <= average_pairwise_distance(T):
                 T = copy_result
 
-    #print(len(G.__getitem__(0))) #number of neighbors in G
-    #len(G.__getitem__(0)) - len(T.__getitem__(0))
-    #print(G.__getitem__(1)) #get list of neighbors
     return T
 
 
@@ -129,7 +122,7 @@ if __name__ == '__main__':
 
     #to run on all inputs: python3 solver.py all_inputs
     if sys.argv[1] == "all_inputs":
-
+        """
         for i in range(1,304):
             path = 'inputs/small-'+str(i)+'.in'
             G = read_input_file(path)
@@ -147,7 +140,7 @@ if __name__ == '__main__':
             print(path + " Average pairwise distance: {}".format(average_pairwise_distance(T)))
             path_string = re.split('[/.]', path)
             write_output_file(T, 'outputs/'+path_string[1]+'.out')
-
+        """
         for i in range(1,401):
             path = 'inputs/large-'+str(i)+'.in'
             G = read_input_file(path)

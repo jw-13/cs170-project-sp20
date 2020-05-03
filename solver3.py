@@ -3,9 +3,10 @@ from parse import read_input_file, write_output_file
 from utils import is_valid_network, average_pairwise_distance
 import sys
 
-import matplotlib.pyplot as plt
+from random import choice
 import re
 from networkx.algorithms import tree
+import numpy as np
 
 from heapq import heappop, heappush
 from itertools import count
@@ -18,29 +19,61 @@ def solve(G):
         T: networkx.Graph
     """
     v_descending_degree = sorted([n for n, d in G.degree()], reverse=True, key=G.degree()) #vertices sorted by degree
-    all_max_deg_vs = [v for v in v_descending_degree if G.degree(v)==G.degree(v_descending_degree[0])]
+    max_v = v_descending_degree[0]
 
-    curr_max_deg_v = v_descending_degree[0]
-    curr_min_sum = sum([v3['weight'] for v1,v2,v3 in G.edges.data() if v1==curr_max_deg_v or v2==curr_max_deg_v])
-    for v in all_max_deg_vs:
+    starting_v = max_v
+    if (len(G.__getitem__(starting_v))) != 0:
+        curr_min_avg = sum([v3['weight'] for v1,v2,v3 in G.edges.data() if v1==starting_v or v2==starting_v]) / len(G.__getitem__(0))
+    else:
+        curr_min_avg = 0
+
+    for v in G.nodes:
         sum_incident_edges = sum([v3['weight'] for v1,v2,v3 in G.edges.data() if v1==v or v2==v])
-        print(sum_incident_edges)
-        print(curr_min_sum)
-        if (sum_incident_edges <= curr_min_sum):
-            curr_max_deg_v = v
-            curr_min_sum = sum_incident_edges
+        if len(G.__getitem__(v)) != 0:
+            curr_avg = sum_incident_edges / len(G.__getitem__(v))
+            if curr_avg < curr_min_avg:
+                starting_v = v
+                curr_min_avg = curr_avg
 
-    max_v = curr_max_deg_v
-    #max_v = v_descending_degree[0] #vertex with max degree
-
+    v_descending_degree = sorted([n for n, d in G.degree()], reverse=True, key=G.degree()) #vertices sorted by degree
+    max_v = v_descending_degree[0]
     if len(G.__getitem__(max_v)) == G.number_of_nodes()-1:
         T = nx.Graph()
         T.add_node(max_v)
         return T
 
-    mst_edges = prim_mst_edges(G, max_v)
-    edgelist = list(mst_edges)
+    results = [0] * 5
+    costs = [0] * 5
+    T = nx.Graph()
+    for i in range(0,5):
+        starting_v = choice(list(G.nodes))
+        print(starting_v)
+        mst_edges = prim_mst_edges(G, starting_v)
+        edgelist = list(mst_edges)
+        str_edgelist = []
+        for edge in edgelist:
+            str_edgelist.append(str(str(edge[0])+" "+str(edge[1])+" "+str(edge[2]["weight"])))
+        T = nx.parse_edgelist(str_edgelist, nodetype=int, data=(('weight',float),))
 
+        v_ascending_degree = sorted([n for n, d in T.degree()], reverse=False, key=T.degree())
+        v_deg_1 = [v for v in v_ascending_degree if T.degree[v]==1] #all leaves of tree
+
+            #looking at all leaves
+        for v in v_deg_1:
+            copy_result = T.copy()
+            copy_result.remove_node(v)
+            if (copy_result.size() > 0) and nx.is_connected(copy_result):
+                if average_pairwise_distance(copy_result) <= average_pairwise_distance(T):
+                    T = copy_result
+        results[i] = T
+        costs[i] = average_pairwise_distance(T)
+        print(costs)
+    idx = np.argmin(costs)
+    return results[idx]
+
+    """
+    mst_edges = prim_mst_edges(G, starting_v)
+    edgelist = list(mst_edges)
     str_edgelist = []
     for edge in edgelist:
         str_edgelist.append(str(str(edge[0])+" "+str(edge[1])+" "+str(edge[2]["weight"])))
@@ -56,10 +89,12 @@ def solve(G):
         if (copy_result.size() > 0) and nx.is_connected(copy_result):
             if average_pairwise_distance(copy_result) <= average_pairwise_distance(T):
                 T = copy_result
+    """
 
     #print(len(G.__getitem__(0))) #number of neighbors in G
     #len(G.__getitem__(0)) - len(T.__getitem__(0))
     #print(G.__getitem__(1)) #get list of neighbors
+
     return T
 
 
@@ -138,7 +173,7 @@ if __name__ == '__main__':
             print(path + " Average pairwise distance: {}".format(average_pairwise_distance(T)))
             path_string = re.split('[/.]', path)
             write_output_file(T, 'outputs/'+path_string[1]+'.out')
-        """
+
         for i in range(1,304):
             path = 'inputs/medium-'+str(i)+'.in'
             G = read_input_file(path)
@@ -147,7 +182,7 @@ if __name__ == '__main__':
             print(path + " Average pairwise distance: {}".format(average_pairwise_distance(T)))
             path_string = re.split('[/.]', path)
             write_output_file(T, 'outputs/'+path_string[1]+'.out')
-
+        """
         for i in range(1,401):
             path = 'inputs/large-'+str(i)+'.in'
             G = read_input_file(path)
