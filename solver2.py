@@ -110,7 +110,18 @@ def kruskal_mst_edges(G, weight='weight', data=True):
         raise nx.NetworkXError(
             "Mimimum spanning tree not defined for directed graphs.")
 
+
     subtrees = UnionFind()
+    for edge in G.edges(data=True):
+        edge = list(edge)
+        incident_degree = G.degree(edge[0]) + G.degree(edge[1]) - 2
+        sum_of_incident = sum([v3['weight'] for v1,v2,v3 in G.edges.data() if v1==edge[0] or v2==edge[0]])
+        sum_of_incident += sum([v3['weight'] for v1,v2,v3 in G.edges.data() if v1==edge[1] or v2==edge[1]])
+        average_sum_of_incident = sum_of_incident / incident_degree
+        edge[2]['weight'] += average_sum_of_incident
+
+
+
     edges = sorted(G.edges(data=True), key=lambda t: t[2].get(weight, 1))
     for u, v, d in edges:
         if subtrees[u] != subtrees[v]:
