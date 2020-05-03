@@ -1,6 +1,5 @@
 # CS 170 Project Spring 2020
-
-Take a look at the project spec before you get started!
+By Elaine Ho, Jocelyn Wang, Justin Yao
 
 ### Requirements:
 You'll need to install networkx. For installation instructions, follow: https://networkx.github.io/documentation/stable/install.html
