@@ -18,7 +18,20 @@ def solve(G):
         T: networkx.Graph
     """
     v_descending_degree = sorted([n for n, d in G.degree()], reverse=True, key=G.degree()) #vertices sorted by degree
-    max_v = v_descending_degree[0] #vertex with max degree
+    all_max_deg_vs = [v for v in v_descending_degree if G.degree(v)==G.degree(v_descending_degree[0])]
+
+    curr_max_deg_v = v_descending_degree[0]
+    curr_min_sum = sum([v3['weight'] for v1,v2,v3 in G.edges.data() if v1==curr_max_deg_v or v2==curr_max_deg_v])
+    for v in all_max_deg_vs:
+        sum_incident_edges = sum([v3['weight'] for v1,v2,v3 in G.edges.data() if v1==v or v2==v])
+        print(sum_incident_edges)
+        print(curr_min_sum)
+        if (sum_incident_edges <= curr_min_sum):
+            curr_max_deg_v = v
+            curr_min_sum = sum_incident_edges
+
+    max_v = curr_max_deg_v
+    #max_v = v_descending_degree[0] #vertex with max degree
 
     if len(G.__getitem__(max_v)) == G.number_of_nodes()-1:
         T = nx.Graph()
@@ -47,9 +60,6 @@ def solve(G):
     #print(len(G.__getitem__(0))) #number of neighbors in G
     #len(G.__getitem__(0)) - len(T.__getitem__(0))
     #print(G.__getitem__(1)) #get list of neighbors
-
-    #is_valid_network(T) to check if it works
-    #total_pairwise_distance = average_pairwise_distance(T) * (len(T) * (len(T) - 1))
     return T
 
 
