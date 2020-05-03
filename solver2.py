@@ -34,7 +34,7 @@ def solve(G):
         T.add_node(max_v)
         return T
 
-    mst_edges = prim_mst_edges(G, max_v)
+    mst_edges = kruskal_mst_edges(G)
     edgelist = list(mst_edges)
 
     str_edgelist = []
@@ -54,6 +54,71 @@ def solve(G):
                 T = copy_result
 
     return T
+
+
+def kruskal_mst_edges(G, weight='weight', data=True):
+    """Generate edges in a minimum spanning forest of an undirected
+    weighted graph.
+
+    A minimum spanning tree is a subgraph of the graph (a tree)
+    with the minimum sum of edge weights.  A spanning forest is a
+    union of the spanning trees for each connected component of the graph.
+
+    Parameters
+    ----------
+    G : NetworkX Graph
+
+    weight : string
+       Edge data key to use for weight (default 'weight').
+
+    data : bool, optional
+       If True yield the edge data along with the edge.
+
+    Returns
+    -------
+    edges : iterator
+       A generator that produces edges in the minimum spanning tree.
+       The edges are three-tuples (u,v,w) where w is the weight.
+
+    Examples
+    --------
+    >>> G=nx.cycle_graph(4)
+    >>> G.add_edge(0,3,weight=2) # assign weight 2 to edge 0-3
+    >>> mst=nx.minimum_spanning_edges(G,data=False) # a generator of MST edges
+    >>> edgelist=list(mst) # make a list of the edges
+    >>> print(sorted(edgelist))
+    [(0, 1), (1, 2), (2, 3)]
+
+    Notes
+    -----
+    Uses Kruskal's algorithm.
+
+    If the graph edges do not have a weight attribute a default weight of 1
+    will be used.
+
+    Modified code from David Eppstein, April 2006
+    http://www.ics.uci.edu/~eppstein/PADS/
+    """
+    # Modified code from David Eppstein, April 2006
+    # http://www.ics.uci.edu/~eppstein/PADS/
+    # Kruskal's algorithm: sort edges by weight, and add them one at a time.
+    # We use Kruskal's algorithm, first because it is very simple to
+    # implement once UnionFind exists, and second, because the only slow
+    # part (the sort) is sped up by being built in to Python.
+    from networkx.utils import UnionFind
+    if G.is_directed():
+        raise nx.NetworkXError(
+            "Mimimum spanning tree not defined for directed graphs.")
+
+    subtrees = UnionFind()
+    edges = sorted(G.edges(data=True), key=lambda t: t[2].get(weight, 1))
+    for u, v, d in edges:
+        if subtrees[u] != subtrees[v]:
+            if data:
+                yield (u, v, d)
+            else:
+                yield (u, v)
+            subtrees.union(u, v)
 
 
 def prim_mst_edges(G, start):
@@ -119,7 +184,7 @@ def prim_mst_edges(G, start):
 
 if __name__ == '__main__':
     assert len(sys.argv) == 2
-
+    total_pairwise_distance = 0
     #to run on all inputs: python3 solver.py all_inputs
     if sys.argv[1] == "all_inputs":
         """
@@ -128,28 +193,38 @@ if __name__ == '__main__':
             G = read_input_file(path)
             T = solve(G)
             assert is_valid_network(G, T)
-            print(path + " Average pairwise distance: {}".format(average_pairwise_distance(T)))
+            total_pairwise_distance += average_pairwise_distance(T)
+            print(path + " Average Pairwise Distance: {}".format(average_pairwise_distance(T)))
             path_string = re.split('[/.]', path)
             write_output_file(T, 'outputs/'+path_string[1]+'.out')
+        print(" Total Average Small Pairwise Distance: {}".format(total_pairwise_distance/303))
         """
+        
         for i in range(1,304):
             path = 'inputs/medium-'+str(i)+'.in'
             G = read_input_file(path)
             T = solve(G)
             assert is_valid_network(G, T)
-            print(path + " Average pairwise distance: {}".format(average_pairwise_distance(T)))
+            total_pairwise_distance += average_pairwise_distance(T)
+            print(path + " Average Pairwise Distance: {}".format(average_pairwise_distance(T)))
             path_string = re.split('[/.]', path)
             write_output_file(T, 'outputs/'+path_string[1]+'.out')
+        print(" Total Average Medium Pairwise Distance: {}".format(total_pairwise_distance/303))
+        
         """
         for i in range(1,401):
             path = 'inputs/large-'+str(i)+'.in'
             G = read_input_file(path)
             T = solve(G)
             assert is_valid_network(G, T)
-            print(path + " Average pairwise distance: {}".format(average_pairwise_distance(T)))
+            total_pairwise_distance += average_pairwise_distance(T)
+            print(path + " Average Pairwise Distance: {}".format(average_pairwise_distance(T)))
             path_string = re.split('[/.]', path)
             write_output_file(T, 'outputs/'+path_string[1]+'.out')
+        print(" Total Average Large Pairwise Distance: {}".format(total_pairwise_distance/400))
         """
+        print(" Total Average Pairwise Distance: {}".format(total_pairwise_distance/1006))
+        
     else:
         path = sys.argv[1]
         G = read_input_file(path)
@@ -158,3 +233,5 @@ if __name__ == '__main__':
         print(path + " Average pairwise distance: {}".format(average_pairwise_distance(T)))
         path_string = re.split('[/.]', path)
         write_output_file(T, 'outputs/'+path_string[1]+'.out')
+
+
