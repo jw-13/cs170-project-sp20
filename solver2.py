@@ -113,6 +113,7 @@ def kruskal_mst_edges(G, weight='weight', data=True):
 
 
     subtrees = UnionFind()
+    """ #average sum of incident edges
     track_sum = {}
     for edge in G.edges(data=True):
         edge = list(edge)
@@ -122,8 +123,17 @@ def kruskal_mst_edges(G, weight='weight', data=True):
         average_sum_of_incident = sum_of_incident / incident_degree
         edge[2]['weight'] += average_sum_of_incident
         track_sum[str(edge[0]) + str(edge[1]) + str(edge[2]['weight'])] = average_sum_of_incident
-        
-
+    """
+    """
+    track_sum = {}
+    for edge in G.edges(data=True):
+        edge = list(edge)
+        incident_degree = G.degree(edge[0]) + G.degree(edge[1]) - 2
+        sum_of_incident = sum([v3['weight'] for v1,v2,v3 in G.edges.data() if v1==edge[0] or v2==edge[0]])
+        sum_of_incident += sum([v3['weight'] for v1,v2,v3 in G.edges.data() if v1==edge[1] or v2==edge[1]])
+        edge[2]['weight'] += incident_degree
+        track_sum[str(edge[0]) + str(edge[1]) + str(edge[2]['weight'])] = incident_degree
+    """
 
 
 
@@ -131,8 +141,11 @@ def kruskal_mst_edges(G, weight='weight', data=True):
     for u, v, d in edges:
         if subtrees[u] != subtrees[v]:
             if data:
+
+                """
                 remove = track_sum.get(str(u) + str(v) + str(d['weight']))
                 d['weight'] -= remove
+                """
                 
                 yield (u, v, d)
             else:
