@@ -187,7 +187,7 @@ if __name__ == '__main__':
     total_pairwise_distance = 0
     #to run on all inputs: python3 solver.py all_inputs
     if sys.argv[1] == "all_inputs":
-        """
+        
         for i in range(1,304):
             path = 'inputs/small-'+str(i)+'.in'
             G = read_input_file(path)
@@ -198,8 +198,8 @@ if __name__ == '__main__':
             path_string = re.split('[/.]', path)
             write_output_file(T, 'outputs/'+path_string[1]+'.out')
         print(" Total Average Small Pairwise Distance: {}".format(total_pairwise_distance/303))
-        """
         
+        """
         for i in range(1,304):
             path = 'inputs/medium-'+str(i)+'.in'
             G = read_input_file(path)
@@ -210,7 +210,7 @@ if __name__ == '__main__':
             path_string = re.split('[/.]', path)
             write_output_file(T, 'outputs/'+path_string[1]+'.out')
         print(" Total Average Medium Pairwise Distance: {}".format(total_pairwise_distance/303))
-        
+        """
         """
         for i in range(1,401):
             path = 'inputs/large-'+str(i)+'.in'
