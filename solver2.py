@@ -53,7 +53,6 @@ def solve(G):
         if (copy_result.size() > 0) and nx.is_connected(copy_result):
             if average_pairwise_distance(copy_result) <= average_pairwise_distance(T):
                 T = copy_result
-
     return T
 
 

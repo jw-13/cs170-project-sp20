@@ -52,7 +52,6 @@ def solve(G):
         if (copy_result.size() > 0) and nx.is_connected(copy_result):
             if average_pairwise_distance(copy_result) <= average_pairwise_distance(T):
                 T = copy_result
-
     return T
 
 
@@ -77,11 +76,14 @@ def kruskal_mst_edges(G, weight='weight', data=True):
     edges_no_weights = [e[0:2] for e in edges] #same order as edges
     edges_copy = edges.copy()
     available_edges = len(edges)
-    print(available_edges)
     dominated = set() #set of dominated vertices
 
     while (available_edges > 0):
+        i = 0
         u,v,d = edges_copy[0]
+        while (u in dominated and v in dominated and i + 1 < len(edges_copy)):
+            i += 1
+            u,v,d = edges_copy[i]
         if subtrees[u] != subtrees[v]:
             dominated.add(u)
             dominated.add(v)
@@ -92,7 +94,6 @@ def kruskal_mst_edges(G, weight='weight', data=True):
             #for loop to find the number of new vertices reached:
             for x,y,w in edges_copy:
                 if x in set(G.__getitem__(u)) or y in set(G.__getitem__(v)): #neighbors of u and v
-                    print("x",x,"y",y)
                     if x not in dominated:
                         new_v_reached += 1
                     if y not in dominated:
@@ -107,7 +108,6 @@ def kruskal_mst_edges(G, weight='weight', data=True):
             for v1,v2,v3 in G.edges.data():
                 if v1 in curr_mst_vertices and v2 in curr_mst_vertices:
                     edges_ = edges[edges_no_weights.index((v1, v2))]
-                    print("edges_",edges_)
                     current_tree.add_edge(v1, v2, weight=v3['weight'])
                     print(current_tree.edges(data=True))
             before = average_pairwise_distance(current_tree)
@@ -120,22 +120,17 @@ def kruskal_mst_edges(G, weight='weight', data=True):
                 if (v1 == u and v2 != v) or (v1 == v and v2 != v) or (v2 == u and v1 != v) or (v2 == v and v1 != u):
                     new_tree.add_edge(v1, v2, weight=v3['weight'])
                     after = average_pairwise_distance(new_tree)
-                    edges_copy[edges_no_weights.index((v1,v2))] = (new_v_reached / (after-before))
-
+                    edge_update = edges_copy[edges_no_weights.index((v1,v2))]
+                    edge_update_list = list(edge_update[0:2])
+                    if after - before > 0:
+                        edge_update_list.append({'weight':(new_v_reached / (after-before))})
+                        edges_copy[edges_no_weights.index((v1,v2))] = edge_update_list
             subtrees.union(u, v)
-            available_edges -= 1
-
             #update edges_copy
-            edges_copy = sorted(edges_copy, key=lambda t: t[2].get("weight"))
-
-            print(available_edges)
+            edges_copy = sorted(edges_copy, key=lambda x:x[2]['weight'])
             yield (u, v, d)
+        available_edges -= 1
 
-
-
-
-    #print(visited.intersection(set(G.__getitem__(v))))
-    #len(G.__getitem__(v)) - len(visited.intersection(set(G.__getitem__(v))))
 def prim_mst_edges(G, start):
     """Iterate over edges of Prim's algorithm min/max spanning tree.
     Parameters
@@ -160,30 +155,10 @@ def prim_mst_edges(G, start):
         visited = {u}
 
         for v, d in G.adj[u].items(): #all neighbor vertices v, d is weight of (u,v)
-            """#heuristic stuff
-            #sum of v's incident edges (v, w):
-            sum_incident_edges = sum([d2.get("weight") for w, d2 in G.adj[v].items()])
-            deg_v = len(G.__getitem__(v))
-            score = 1
-            print("score of vertex", v, score)
-            """
             wt = d.get("weight") #edge weight
             push(frontier, (wt, next(c), u, v, d))
 
         while frontier:
-            """ #heuristic stuff
-            vertex_v = [v for w, _, u, v, d in frontier]
-
-            #neighborhood of v:
-            neighborhood_v = [set(G.__getitem__(v)) for w, _, u, v, d in frontier]
-            dictionary = dict(zip(vertex_v, neighborhood_v))
-            print(dictionary)
-
-            #non-visited neighbors of v:
-            print(visited.intersection(set(G.__getitem__(v))))
-            #len(G.__getitem__(v)) - len(visited.intersection(set(G.__getitem__(v))))
-            """
-
             W, _, u, v, d = pop(frontier)
             if v in visited or v not in nodes:
                 continue
@@ -244,6 +219,9 @@ if __name__ == '__main__':
         path = sys.argv[1]
         G = read_input_file(path)
         T = solve(G)
+        print(nx.is_connected(T))
+        print(nx.is_tree(T))
+        print(nx.is_dominating_set(G, T.nodes))
         assert is_valid_network(G, T)
         print(path + " Average pairwise distance: {}".format(average_pairwise_distance(T)))
         path_string = re.split('[/.]', path)
