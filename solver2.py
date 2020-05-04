@@ -133,9 +133,6 @@ def kruskal_mst_edges(G, weight='weight', data=True):
         edge[2]['weight'] += incident_degree
         track_sum[str(edge[0]) + str(edge[1]) + str(edge[2]['weight'])] = incident_degree
     """
-
-
-
     edges = sorted(G.edges(data=True), key=lambda t: t[2].get(weight, 1))
     for u, v, d in edges:
         if subtrees[u] != subtrees[v]:
@@ -176,30 +173,10 @@ def prim_mst_edges(G, start):
         visited = {u}
 
         for v, d in G.adj[u].items(): #all neighbor vertices v, d is weight of (u,v)
-            """#heuristic stuff
-            #sum of v's incident edges (v, w):
-            sum_incident_edges = sum([d2.get("weight") for w, d2 in G.adj[v].items()])
-            deg_v = len(G.__getitem__(v))
-            score = 1
-            print("score of vertex", v, score)
-            """
             wt = d.get("weight") #edge weight
             push(frontier, (wt, next(c), u, v, d))
 
         while frontier:
-            """ #heuristic stuff
-            vertex_v = [v for w, _, u, v, d in frontier]
-
-            #neighborhood of v:
-            neighborhood_v = [set(G.__getitem__(v)) for w, _, u, v, d in frontier]
-            dictionary = dict(zip(vertex_v, neighborhood_v))
-            print(dictionary)
-
-            #non-visited neighbors of v:
-            print(visited.intersection(set(G.__getitem__(v))))
-            #len(G.__getitem__(v)) - len(visited.intersection(set(G.__getitem__(v))))
-            """
-
             W, _, u, v, d = pop(frontier)
             if v in visited or v not in nodes:
                 continue

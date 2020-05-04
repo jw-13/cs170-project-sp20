@@ -4,6 +4,7 @@ from utils import is_valid_network, average_pairwise_distance
 import sys
 
 import re
+import matplotlib.pyplot as plt
 from networkx.algorithms import tree
 from networkx.utils import UnionFind
 from heapq import heappop, heappush
@@ -42,6 +43,16 @@ def solve(G):
         str_edgelist.append(str(str(edge[0])+" "+str(edge[1])+" "+str(edge[2]["weight"])))
     T = nx.parse_edgelist(str_edgelist, nodetype=int, data=(('weight',float),))
 
+    """
+    plt.figure(figsize=(8,8))
+    pos=nx.spring_layout(G)
+    nx.draw_networkx(G, pos)
+    labels = nx.get_edge_attributes(G,"weight")
+    nx.draw_networkx_edge_labels(G,pos,edge_labels=labels)
+    nx.draw_networkx_edges(G,pos, edgelist=[e for e in T.edges()], width=5,alpha=0.5,edge_color='r')
+    plt.show()
+    """
+
     v_ascending_degree = sorted([n for n, d in T.degree()], reverse=False, key=T.degree())
     v_deg_1 = [v for v in v_ascending_degree if T.degree[v]==1] #all leaves of tree
 
@@ -53,7 +64,6 @@ def solve(G):
             if average_pairwise_distance(copy_result) <= average_pairwise_distance(T):
                 T = copy_result
     return T
-
 
 def kruskal_mst_edges(G, weight='weight', data=True):
     """Generate edges in a minimum spanning forest of an undirected
@@ -75,13 +85,14 @@ def kruskal_mst_edges(G, weight='weight', data=True):
     edges = sorted(G.edges(data=True), key=lambda t: t[2].get("weight")) #sorted by edge weights first
     edges_no_weights = [e[0:2] for e in edges] #same order as edges
     edges_copy = edges.copy()
-    available_edges = len(edges)
+    available_edges = len(G.nodes) - 1
     dominated = set() #set of dominated vertices
+    num_edges_mst = 0
 
-    while (available_edges > 0):
+    while num_edges_mst < len(G.nodes):
         i = 0
         u,v,d = edges_copy[0]
-        while (u in dominated and v in dominated and i + 1 < len(edges_copy)):
+        while (u in dominated and v in dominated and i + 1 < len(edges_copy) and subtrees[u] == subtrees[v]):
             i += 1
             u,v,d = edges_copy[i]
         if subtrees[u] != subtrees[v]:
@@ -103,18 +114,16 @@ def kruskal_mst_edges(G, weight='weight', data=True):
             subtrees.union(u, v)
             curr_mst_vertices = [list(s) for s in subtrees.to_sets() if u in s]
             curr_mst_vertices = curr_mst_vertices[0]
-            print("curr subtree",curr_mst_vertices)
             current_tree = nx.Graph()
             for v1,v2,v3 in G.edges.data():
                 if v1 in curr_mst_vertices and v2 in curr_mst_vertices:
                     edges_ = edges[edges_no_weights.index((v1, v2))]
                     current_tree.add_edge(v1, v2, weight=v3['weight'])
-                    print(current_tree.edges(data=True))
             before = average_pairwise_distance(current_tree)
 
             #add one edge to find increase in cost
             for v1,v2,v3 in edges_copy:
-                print(v1,v2,v3)
+                #print(v1,v2,v3)
                 new_tree = current_tree.copy()
                 #edge (u, X) (v, X) (X, u) (X, v)
                 if (v1 == u and v2 != v) or (v1 == v and v2 != v) or (v2 == u and v1 != v) or (v2 == v and v1 != u):
@@ -122,14 +131,17 @@ def kruskal_mst_edges(G, weight='weight', data=True):
                     after = average_pairwise_distance(new_tree)
                     edge_update = edges_copy[edges_no_weights.index((v1,v2))]
                     edge_update_list = list(edge_update[0:2])
-                    if after - before > 0:
-                        edge_update_list.append({'weight':(new_v_reached / (after-before))})
+                    if after - before > 0 and new_v_reached!=0:
+                        edge_update_list.append({'weight':((after-before)/new_v_reached)})
                         edges_copy[edges_no_weights.index((v1,v2))] = edge_update_list
-            subtrees.union(u, v)
             #update edges_copy
             edges_copy = sorted(edges_copy, key=lambda x:x[2]['weight'])
-            yield (u, v, d)
-        available_edges -= 1
+            #available_edges -= 1
+            num_edges_mst += 1
+            yield (u, v, edges[edges_no_weights.index((u,v))][2])
+            if num_edges_mst == len(G.nodes)-1:
+                break
+        #available_edges -= 1
 
 def prim_mst_edges(G, start):
     """Iterate over edges of Prim's algorithm min/max spanning tree.
@@ -178,7 +190,7 @@ if __name__ == '__main__':
     #to run on all inputs: python3 solver.py all_inputs
     if sys.argv[1] == "all_inputs":
         
-        for i in range(1,304):
+        for i in range(266,304):
             path = 'inputs/small-'+str(i)+'.in'
             G = read_input_file(path)
             T = solve(G)
@@ -188,8 +200,7 @@ if __name__ == '__main__':
             path_string = re.split('[/.]', path)
             write_output_file(T, 'outputs/'+path_string[1]+'.out')
         print(" Total Average Small Pairwise Distance: {}".format(total_pairwise_distance/303))
-        
-        """
+
         for i in range(1,304):
             path = 'inputs/medium-'+str(i)+'.in'
             G = read_input_file(path)
@@ -200,7 +211,7 @@ if __name__ == '__main__':
             path_string = re.split('[/.]', path)
             write_output_file(T, 'outputs/'+path_string[1]+'.out')
         print(" Total Average Medium Pairwise Distance: {}".format(total_pairwise_distance/303))
-        """
+
         """
         for i in range(1,401):
             path = 'inputs/large-'+str(i)+'.in'
@@ -219,9 +230,6 @@ if __name__ == '__main__':
         path = sys.argv[1]
         G = read_input_file(path)
         T = solve(G)
-        print(nx.is_connected(T))
-        print(nx.is_tree(T))
-        print(nx.is_dominating_set(G, T.nodes))
         assert is_valid_network(G, T)
         print(path + " Average pairwise distance: {}".format(average_pairwise_distance(T)))
         path_string = re.split('[/.]', path)
