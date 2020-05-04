@@ -78,8 +78,6 @@ def kruskal_mst_edges(G, weight='weight', data=True):
     edges_copy = edges.copy()
     available_edges = len(edges)
     print(available_edges)
-
-    print(edges.index((3, 23, {'weight': 5.037})))
     dominated = set() #set of dominated vertices
 
     while (available_edges > 0):
@@ -87,31 +85,53 @@ def kruskal_mst_edges(G, weight='weight', data=True):
         if subtrees[u] != subtrees[v]:
             dominated.add(u)
             dominated.add(v)
-            #size_dominated = len(dominated) #currently dominated
             new_v_reached = 0
+            u_subtree = []
+            v_subtree = []
+
+            #for loop to find the number of new vertices reached:
             for x,y,w in edges_copy:
-                if x in set(G.__getitem__(u)) or y in set(G.__getitem__(v)):
+                if x in set(G.__getitem__(u)) or y in set(G.__getitem__(v)): #neighbors of u and v
+                    print("x",x,"y",y)
                     if x not in dominated:
                         new_v_reached += 1
                     if y not in dominated:
                         new_v_reached += 1
-                print(list(subtrees.to_sets()))
-                u_subtree = [s for s in list(subtrees.to_sets()) if u in s]
-                v_subtree = [s for s in list(subtrees.to_sets()) if v in s]
 
-                print("u subtree",u_subtree)
-                print("v subtree",v_subtree)
-                new_tree = nx.Graph()
-                for v1,v2,v3 in G.edges.data():
-                    if v1 in u_subtree and v2 in v_subtree:
-                        new_tree.add_edge(v1, v2, weight=v3['weight'])
-                    elif v2 in v_subtree and v1 in u_subtree:
-                        new_tree.add_edge(v2, v1, weight=v3['weight'])
-                    #print(new_tree.edges(data=True))
-                #before = average_pairwise_distance(new_tree)
-            yield (u, v, d)
-            available_edges -= 1
+            #all parts of current mst
             subtrees.union(u, v)
+            curr_mst_vertices = [list(s) for s in subtrees.to_sets() if u in s]
+            curr_mst_vertices = curr_mst_vertices[0]
+            print("curr subtree",curr_mst_vertices)
+            current_tree = nx.Graph()
+            for v1,v2,v3 in G.edges.data():
+                if v1 in curr_mst_vertices and v2 in curr_mst_vertices:
+                    edges_ = edges[edges_no_weights.index((v1, v2))]
+                    print("edges_",edges_)
+                    current_tree.add_edge(v1, v2, weight=v3['weight'])
+                    print(current_tree.edges(data=True))
+            before = average_pairwise_distance(current_tree)
+
+            #add one edge to find increase in cost
+            for v1,v2,v3 in edges_copy:
+                print(v1,v2,v3)
+                new_tree = current_tree.copy()
+                #edge (u, X) (v, X) (X, u) (X, v)
+                if (v1 == u and v2 != v) or (v1 == v and v2 != v) or (v2 == u and v1 != v) or (v2 == v and v1 != u):
+                    new_tree.add_edge(v1, v2, weight=v3['weight'])
+                    after = average_pairwise_distance(new_tree)
+                    edges_copy[edges_no_weights.index((v1,v2))] = (new_v_reached / (after-before))
+
+            subtrees.union(u, v)
+            available_edges -= 1
+
+            #update edges_copy
+            edges_copy = sorted(edges_copy, key=lambda t: t[2].get("weight"))
+
+            print(available_edges)
+            yield (u, v, d)
+
+
 
 
     #print(visited.intersection(set(G.__getitem__(v))))
